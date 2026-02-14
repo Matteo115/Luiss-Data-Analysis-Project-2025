@@ -1,60 +1,98 @@
 # MLB Salary Prediction using Multinomial Logistic Regression
 
-![R](https://img.shields.io/badge/Language-R-blue) ![Status](https://img.shields.io/badge/Status-Completed-success)
+This repository contains an **R Markdown** analysis that builds and evaluates a **Multinomial Logistic Regression** model to predict **baseball players’ salary levels** (Low / Medium / High) using performance and categorical predictors.
 
-## 📌 Project Overview
-This project focuses on predicting the salary levels of Major League Baseball (MLB) players based on their performance statistics. Using the **Hitters** dataset, the objective was to classify players into three salary categories (**Low, Medium, High**) using **Multinomial Logistic Regression**.
+The main file is:
 
-This analysis was conducted as part of an academic project at **LUISS Guido Carli University**.
+- `ProjectWork_DataBros.Rmd` — the full report (EDA + modeling + evaluation + improvement steps)
 
-## 📊 Dataset
-The analysis uses the `Hitters.csv` dataset, which contains statistics and salaries for baseball players.
-* **Observations:** 322 players (reduced to 259 after cleaning missing values).
-* **Target Variable:** `SalaryLevel` (Created by binning the continuous `Salary` variable into tertiles).
-* **Predictors:** Various performance metrics (e.g., `AtBat`, `Hits`, `HomeRuns`, `Years`, etc.).
+---
 
-## ⚙️ Methodology
+## What this project does
 
-The project follows a structured Data Science pipeline:
+The R Markdown document is organized into three main parts:
 
-### 1. Exploratory Data Analysis (EDA)
-* Data cleaning (handling missing values in the `Salary` column).
-* Factorization of categorical variables (`League`, `Division`).
-* Analysis of distributions and correlations (detected right-skewness in salary and multicollinearity among career stats).
+### 1) Overview (Theory)
+A short introduction to **multinomial logistic regression**, explaining when it is used (response variable with 3+ classes) and the intuition behind the model.
 
-### 2. Modeling Strategy
-We implemented a **Multinomial Logistic Regression** model using the `nnet` package. The training process involved:
-* **Data Partitioning:** Stratified splitting (70% Train, 30% Test).
-* **Validation Methods:** Comparison between **Vanilla Validation Set** and **K-Fold Cross-Validation (K=5)** to ensure robustness.
+### 2) Exploratory Data Analysis (EDA)
+Steps performed on the dataset include:
 
-### 3. Model Optimization
-* **Baseline Model:** Included all predictors.
-* **Feature Selection:** Removed statistically insignificant variables (high p-values).
-* **Stepwise Selection:** Applied Backward Stepwise Selection to minimize AIC.
+- **Load data** from `Hitters.csv`
+- **Summary statistics** (numeric + categorical)
+- **Missing values handling** (rows with missing values are removed)
+- **Factor conversion** for categorical predictors
+- **Target engineering**:
+  - The numeric variable `Salary` is discretized into 3 classes using salary **terciles**:
+    - `LowSalary`, `MediumSalary`, `HighSalary`
+- Visual exploration:
+  - Barplots for categorical variables (`League`, `Division`, `NewLeague`, `SalaryLevel`)
+  - Distribution summaries for numeric predictors
+  - **Correlation heatmap** for numeric variables
 
-## 📈 Key Results
+### 3) Model & Performance + Improvements
+The workflow includes:
 
-We compared the Full Model against an Improved (Reduced) Model. The optimization process successfully increased accuracy while reducing model complexity.
+- **Data split** into:
+  - training / validation / test (with fixed random seeds for reproducibility)
+- **Baseline model**:
+  - Multinomial regression with **all predictors** (`SalaryLevel ~ .`)
+- **Evaluation methods**:
+  - “Vanilla” validation accuracy
+  - Manual **5-fold cross-validation**
+  - Test set evaluation with:
+    - **Confusion matrix**
+    - Per-class metrics computed manually:
+      - Sensitivity, Specificity, Precision
+    - Overall Accuracy
 
-| Metric | Full Model | Improved Model (Final) |
-| :--- | :---: | :---: |
-| **Validation Accuracy** | 72.2% | **72.2%** |
-| **Test Set Accuracy** | 61.8% | **64.5%** |
-| **5-Fold CV Accuracy** | 59.2% | **64.7%** |
-| **AIC** | 264.13 | **255.02** |
+#### Model improvement
+Two simplification strategies are implemented:
 
-The final model generalizes better to unseen data, demonstrating that removing noisy variables (like `Hits`, `RBI`, `Runs`) improved the predictive power.
+1. **Significance-based feature removal**
+   - Removes predictors with high p-values / low z-scores (as identified from the full model output), e.g.:
+     - `Hits`, `RBI`, `CRBI`, `CHmRun`, `CRuns`, `Runs`
 
-## 🛠️ Technologies & Libraries
-* **Language:** R
-* **Libraries:**
-    * `nnet` (Multinomial Regression)
-    * `caret` (Machine Learning workflow & Cross-Validation)
-    * `ggplot2` (Data Visualization)
-    * `dplyr` / `tidyr` (Data Manipulation)
-    * `corrplot` (Correlation analysis)
+2. **Backward elimination (wrapper approach)**
+   - A custom backward-selection routine that iteratively removes features based on accuracy impact.
+   - Includes additional evaluation with cross-validation for the selected formula.
 
-## 🚀 How to Run
-1. Clone the repository:
-   ```bash
+---
+
+## Dataset
+
+This project expects a CSV file named:
+
+- `Hitters.csv`
+
+It should contain at least:
+- A numeric salary column: `Salary`
+- Baseball performance metrics (numeric)
+- Categorical variables such as `League`, `Division`, `NewLeague` (used in the plots and modeling)
+
+> Note: The report removes rows with missing values before modeling.
+
+---
+
+## Requirements
+
+### Software
+- R (recommended: recent version)
+- RStudio (recommended for knitting `.Rmd`)
+
+### R packages used
+The script loads these libraries:
+
+- `dplyr`
+- `ggplot2`
+- `tidyr`
+- `corrplot`
+- `caret`
+- `nnet` (for `multinom()`)
+
+Install them with:
+
+```r
+install.packages(c("dplyr", "ggplot2", "tidyr", "corrplot", "caret", "nnet"))
+
    git clone [https://github.com/YOUR_USERNAME/MLB-Salary-Prediction-Multinomial-Regression.git](https://github.com/YOUR_USERNAME/MLB-Salary-Prediction-Multinomial-Regression.git)
